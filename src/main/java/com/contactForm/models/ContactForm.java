@@ -37,8 +37,13 @@ public class ContactForm {
     @Column(name = "ContactMessage", nullable = false, columnDefinition = "TEXT")
     private String contactMessage;
 
-    @Column(name = "MessageSentDate", insertable = false, updatable = false)
+    @Column(name = "MessageSentDate")
     private LocalDateTime messageSentDate;
+    
+    @PrePersist
+    protected void onCreate() {
+        this.messageSentDate = LocalDateTime.now();
+    }
 
     
 	public Integer getMessageId() {
