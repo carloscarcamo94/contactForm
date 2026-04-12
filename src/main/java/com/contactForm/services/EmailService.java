@@ -26,8 +26,8 @@ public class EmailService {
 
         // Configurar el cuerpo del mensaje (JSON)
         Map<String, Object> body = new HashMap<>();
-        body.put("from", "onboarding@resend.dev");
-        body.put("to", "carlos.carcamosegovia@gmail.com");
+        body.put("from", "notificaciones@carloscarcamo.tech");
+        body.put("to", "contacto@carloscarcamo.tech");
         body.put("subject", "Nuevo mensaje en el buzón");
         body.put("html", String.format(
             "<strong>Nombre:</strong> %s<br><strong>Teléfono:</strong> %s<br><strong>Email:</strong> %s<br><br><strong>Mensaje:</strong><p>%s</p>",
