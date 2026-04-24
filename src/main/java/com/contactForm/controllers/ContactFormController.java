@@ -8,7 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = {
+    "https://carlosdev-portafolio.vercel.app/", 
+    "http://localhost:5500", 
+    "http://localhost:3000"
+}) 
 @RestController
 @RequestMapping("/api/contacto")
 public class ContactFormController {
@@ -18,11 +22,9 @@ public class ContactFormController {
 
     @PostMapping
     public ResponseEntity<String> recibirMensaje(@Valid @RequestBody ContactForm mensaje) {
-        try {
-            contactFormService.guardarMensaje(mensaje);
-            return new ResponseEntity<>("¡Mensaje guardado con éxito!", HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error al guardar el mensaje", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        // El GlobalExceptionHandler interceptará la falla automáticamente si los datos son incorrectos
+    	
+        contactFormService.guardarMensaje(mensaje);
+        return new ResponseEntity<>("¡Mensaje guardado con éxito!", HttpStatus.CREATED);
     }
 }
