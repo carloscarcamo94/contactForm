@@ -22,9 +22,10 @@ public class ContactForm {
     private String contactName;
 
     @NotBlank
-    @Size(max = 8, min = 8) // Nos aseguramos que sean exactamente los 8 dígitos
-    @Pattern(regexp = "^[0-9]{8}$", message = "El teléfono debe contener exactamente 8 números")
-    @Column(name = "ContactPhone", nullable = false, length = 8)
+    @Size(max = 15, min = 9)
+    // Expresión regular que exige iniciar con '+' seguido de 1 a 14 dígitos
+    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "El teléfono debe utilizar el formato internacional válido")
+    @Column(name = "ContactPhone", nullable = false, length = 15)
     private String contactPhone;
 
     @NotBlank
