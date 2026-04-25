@@ -32,14 +32,8 @@ public class RateLimitFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
-            chain.doFilter(request, response);
-            return;
-        }
-
         if (httpRequest.getRequestURI().startsWith("/api/contacto")) {
             
-            // Extraemos la IP real del usuario a través del Proxy de Render
             String ip = httpRequest.getHeader("X-Forwarded-For");
             if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
                 ip = httpRequest.getRemoteAddr();
@@ -52,11 +46,6 @@ public class RateLimitFilter implements Filter {
             if (bucket.tryConsume(1)) {
                 chain.doFilter(request, response);
             } else {
-                // Añadimos encabezados de CORS manualmente al error 429
-                String origin = httpRequest.getHeader("Origin");
-                if (origin != null) {
-                    httpResponse.setHeader("Access-Control-Allow-Origin", origin);
-                }
                 httpResponse.setStatus(429);
                 httpResponse.setCharacterEncoding("UTF-8");
                 httpResponse.setContentType("application/json");
