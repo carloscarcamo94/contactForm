@@ -21,6 +21,8 @@ public class CorsConfig {
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
         config.setAllowedOrigins(Arrays.asList(
+        	"https://carloscarcamo.tech",
+            "https://www.carloscarcamo.tech",
         	"https://carlosdev-portafolio.vercel.app", 
         	"http://localhost:5500", 
         	"http://localhost:3000"

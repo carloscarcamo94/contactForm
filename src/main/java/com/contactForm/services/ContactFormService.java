@@ -16,15 +16,14 @@ public class ContactFormService {
     private EmailService emailService;
 
     public ContactForm guardarMensaje(ContactForm mensaje) {
-        // 1. Guardamos el mensaje en la base de datos (FreeDB)
+        // Guardamos el mensaje en la base de datos alojada en Supabase
         ContactForm mensajeGuardado = contactFormRepository.save(mensaje);
 
-        // 2. Intentamos enviar el correo de notificación
+        // Intentamos enviar el correo de notificación
         try {
             emailService.enviarNotificacion(mensajeGuardado);
         } catch (Exception e) {
-            // Atrapamos el error para asegurar que la aplicación no colapse y el usuario reciba
-            // su mensaje de "Éxito" en el frontend, ya que sí se guardó en la base de datos.
+            // Atrapamos el error para asegurar que la aplicación no colapse y el usuario reciban un mensaje de "Éxito", ya que sí se guardó en la base de datos.
             System.err.println("Error al enviar el correo de notificación: " + e.getMessage());
         }
 
