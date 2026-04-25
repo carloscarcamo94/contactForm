@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = {
-    "https://carlosdev-portafolio.vercel.app/", 
+    "https://carlosdev-portafolio.vercel.app", 
     "http://localhost:5500", 
     "http://localhost:3000"
 }) 
