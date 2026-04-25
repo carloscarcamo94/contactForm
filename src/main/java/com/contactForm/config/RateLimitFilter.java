@@ -5,14 +5,15 @@ import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.annotation.Order; 
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Order(1)
 public class RateLimitFilter implements Filter {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
