@@ -15,16 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitFilter implements Filter {
 
-    // Guardamos un cubo por cada dirección IP
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-    // Definimos las reglas, solamente aceptaremos 3 peticiones por hora por cada IP
     private Bucket createNewBucket() {
         Bandwidth limit = Bandwidth.builder()
-                .capacity(3) // Capacidad total del cubo
-                .refillIntervally(3, Duration.ofHours(1)) // Tiempo asignado para reiniciar el cubo
+                .capacity(3)
+                .refillIntervally(3, Duration.ofHours(1))
                 .build();
-                
         return Bucket.builder().addLimit(limit).build();
     }
 
@@ -35,16 +32,31 @@ public class RateLimitFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // Aplicamos el filtro a la ruta del formulario de contacto
+        if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (httpRequest.getRequestURI().startsWith("/api/contacto")) {
-            String ip = httpRequest.getRemoteAddr(); // Obtenemos la IP del cliente
+            
+            // Extraemos la IP real del usuario a través del Proxy de Render
+            String ip = httpRequest.getHeader("X-Forwarded-For");
+            if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                ip = httpRequest.getRemoteAddr();
+            } else {
+                ip = ip.split(",")[0].trim();
+            }
+
             Bucket bucket = buckets.computeIfAbsent(ip, k -> createNewBucket());
 
             if (bucket.tryConsume(1)) {
-                // Si hay token disponible, la petición continúa
                 chain.doFilter(request, response);
             } else {
-                // Si no hay token, devolvemos un error 429 "Too Many Requests"
+                // Añadimos encabezados de CORS manualmente al error 429
+                String origin = httpRequest.getHeader("Origin");
+                if (origin != null) {
+                    httpResponse.setHeader("Access-Control-Allow-Origin", origin);
+                }
                 httpResponse.setStatus(429);
                 httpResponse.setCharacterEncoding("UTF-8");
                 httpResponse.setContentType("application/json");
