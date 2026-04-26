@@ -16,25 +16,26 @@ public class ContactForm {
     @Column(name = "MessageId")
     private Integer messageId;
 
-    @NotBlank
+    @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 50)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s\\-']+$", message = "El nombre contiene caracteres no permitidos")
     @Column(name = "ContactName", nullable = false, length = 50)
     private String contactName;
 
-    @NotBlank
+    @NotBlank(message = "El teléfono es obligatorio")
     @Size(max = 15, min = 9)
     // Expresión regular que exige iniciar con '+' seguido de 1 a 14 dígitos
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "El teléfono debe utilizar el formato internacional válido")
     @Column(name = "ContactPhone", nullable = false, length = 15)
     private String contactPhone;
 
-    @NotBlank
+    @NotBlank(message = "El correo es obligatorio")
     @Email
     @Size(max = 70)
     @Column(name = "ContactEmail", nullable = false, length = 70)
     private String contactEmail;
 
-    @NotBlank
+    @NotBlank(message = "El mensaje es obligatorio")
     @Column(name = "ContactMessage", nullable = false, columnDefinition = "TEXT")
     private String contactMessage;
 
