@@ -21,8 +21,8 @@ public class RateLimitFilter implements Filter {
 
     private Bucket createNewBucket() {
         Bandwidth limit = Bandwidth.builder()
-                .capacity(3)
-                .refillIntervally(3, Duration.ofHours(1))
+                .capacity(2)
+                .refillIntervally(2, Duration.ofHours(1))
                 .build();
         return Bucket.builder().addLimit(limit).build();
     }
