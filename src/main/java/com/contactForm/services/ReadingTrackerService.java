@@ -34,12 +34,15 @@ public class ReadingTrackerService {
         headers.set("Notion-Version", notionVersion);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String body = "{ \"filter\": { \"property\": \"Status\", \"status\": { \"equals\": \"Reading\" } } }";
+        //String body = "{ \"filter\": { \"property\": \"Status\", \"status\": { \"equals\": \"Reading\" } } }";
+        
+        String body = "{}"; // Le decimos a Notion: "Tráeme todo sin filtrar"
 
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            System.out.println(">>> JSON obtenido de Notion: " + response.getBody());
             return mapearRespuestaANotion(response.getBody());
         } catch (Exception e) {
             System.err.println("Error al consultar Notion: " + e.getMessage());
