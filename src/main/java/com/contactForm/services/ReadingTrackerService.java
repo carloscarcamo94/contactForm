@@ -42,6 +42,7 @@ public class ReadingTrackerService {
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            System.out.println("JSON recibido de Notion: " + response.getBody());
             return mapearRespuestaANotion(response.getBody());
         } catch (Exception e) {
             System.err.println("Error al consultar Notion: " + e.getMessage());
@@ -59,20 +60,30 @@ public class ReadingTrackerService {
                 LibroDTO libro = new LibroDTO();
                 JsonNode props = node.path("properties");
 
-                // Extraemos los datos del JSON de Notion
-                libro.setTitulo(props.path("Title").path("title").get(0).path("plain_text").asText());
+                // 1. Título (Columna "Name")
+                libro.setTitulo(props.path("Name").path("title").get(0).path("plain_text").asText());
+
+                // 2. Autor (Columna "Author")
                 libro.setAutor(props.path("Author").path("rich_text").get(0).path("plain_text").asText());
-                libro.setGenero(props.path("Literary Genre").path("multi_select").get(0).path("name").asText());
-                libro.setProgreso(props.path("Progress").path("number").asDouble());
-                libro.setEstado(props.path("Status").path("status").path("name").asText());
-                
-                // Obtenemos el URL de la portada del libro
+
+                // 3. Género (Columna "Literary Genre")
+                if (props.path("Literary Genre").path("multi_select").has(0)) {
+                    libro.setGenero(props.path("Literary Genre").path("multi_select").get(0).path("name").asText());
+                }
+
+                // 4. Progreso (Columna "Progress" que es una Fórmula)
+                libro.setProgreso(props.path("Progress").path("formula").path("number").asDouble());
+
+                // 5. Estado (Columna "Status")
+                libro.setEstado(props.path("Status").path("select").path("name").asText());
+
+                // 7. Portada (Cover del libro)
                 libro.setPortadaUrl(node.path("cover").path("external").path("url").asText());
 
                 libros.add(libro);
             }
         } catch (Exception e) {
-            System.err.println("Error al parsear JSON de Notion: " + e.getMessage());
+            System.err.println("Error al mapear JSON: " + e.getMessage());
         }
         return libros;
     }

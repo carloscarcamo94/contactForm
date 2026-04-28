@@ -7,10 +7,7 @@ public class LibroDTO {
     private String genero;
     private Double progreso;
     private String estado;
-    private Integer paginasTotales;
-    private Integer paginasLeidas;
-    private String comentarios;
-    
+    private String rating;
     
 	public String getTitulo() {
 		return titulo;
@@ -48,23 +45,11 @@ public class LibroDTO {
 	public void setEstado(String estado) {
 		this.estado = estado;
 	}
-	public Integer getPaginasTotales() {
-		return paginasTotales;
+	public String getRating() {
+		return rating;
 	}
-	public void setPaginasTotales(Integer paginasTotales) {
-		this.paginasTotales = paginasTotales;
-	}
-	public Integer getPaginasLeidas() {
-		return paginasLeidas;
-	}
-	public void setPaginasLeidas(Integer paginasLeidas) {
-		this.paginasLeidas = paginasLeidas;
-	}
-	public String getComentarios() {
-		return comentarios;
-	}
-	public void setComentarios(String comentarios) {
-		this.comentarios = comentarios;
+	public void setRating(String rating) {
+		this.rating = rating;
 	}
     
 }
