@@ -29,20 +29,17 @@ public class ReadingTrackerService {
     public List<LibroDTO> obtenerLibrosEnLectura() {
         String url = "https://api.notion.com/v1/databases/" + databaseId + "/query";
 
-        // Configuramos los Headers de Notion
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(notionToken);
         headers.set("Notion-Version", notionVersion);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Traemos los libros que tenga el Status "Reading"
         String body = "{ \"filter\": { \"property\": \"Status\", \"status\": { \"equals\": \"Reading\" } } }";
 
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-            System.out.println("JSON recibido de Notion: " + response.getBody());
             return mapearRespuestaANotion(response.getBody());
         } catch (Exception e) {
             System.err.println("Error al consultar Notion: " + e.getMessage());
@@ -60,30 +57,45 @@ public class ReadingTrackerService {
                 LibroDTO libro = new LibroDTO();
                 JsonNode props = node.path("properties");
 
-                // 1. Título (Columna "Name")
-                libro.setTitulo(props.path("Name").path("title").get(0).path("plain_text").asText());
-
-                // 2. Autor (Columna "Author")
-                libro.setAutor(props.path("Author").path("rich_text").get(0).path("plain_text").asText());
-
-                // 3. Género (Columna "Literary Genre")
-                if (props.path("Literary Genre").path("multi_select").has(0)) {
-                    libro.setGenero(props.path("Literary Genre").path("multi_select").get(0).path("name").asText());
+                // 1. Name (Tipo: Title)
+                if (props.path("Name").path("title").isArray() && props.path("Name").path("title").size() > 0) {
+                    libro.setTitulo(props.path("Name").path("title").get(0).path("plain_text").asText());
                 }
 
-                // 4. Progreso (Columna "Progress" que es una Fórmula)
-                libro.setProgreso(props.path("Progress").path("formula").path("number").asDouble());
+                // 2. Author (Tipo: Text)
+                if (props.path("Author").path("rich_text").isArray() && props.path("Author").path("rich_text").size() > 0) {
+                    libro.setAutor(props.path("Author").path("rich_text").get(0).path("plain_text").asText());
+                }
 
-                // 5. Estado (Columna "Status")
-                libro.setEstado(props.path("Status").path("select").path("name").asText());
+                // 3. Literary Genre (Tipo: Select)
+                if (!props.path("Literary Genre").path("select").isNull() && !props.path("Literary Genre").path("select").isMissingNode()) {
+                    libro.setGenero(props.path("Literary Genre").path("select").path("name").asText());
+                }
 
-                // 7. Portada (Cover del libro)
-                libro.setPortadaUrl(node.path("cover").path("external").path("url").asText());
+                // 4. Progress (Tipo: Formula -> Number)
+                if (!props.path("Progress").path("formula").path("number").isNull()) {
+                    libro.setProgreso(props.path("Progress").path("formula").path("number").asDouble());
+                }
+
+                // 5. Status (Tipo: Status)
+                if (!props.path("Status").path("status").isNull() && !props.path("Status").path("status").isMissingNode()) {
+                    libro.setEstado(props.path("Status").path("status").path("name").asText());
+                }
+
+                // 6. Rating (Tipo: Select)
+                if (!props.path("Rating").path("select").isNull() && !props.path("Rating").path("select").isMissingNode()) {
+                    libro.setRating(props.path("Rating").path("select").path("name").asText());
+                }
+
+                // 7. Cover (Portada externa)
+                if (!node.path("cover").isNull() && !node.path("cover").path("external").isMissingNode()) {
+                    libro.setPortadaUrl(node.path("cover").path("external").path("url").asText());
+                }
 
                 libros.add(libro);
             }
         } catch (Exception e) {
-            System.err.println("Error al mapear JSON: " + e.getMessage());
+            System.err.println("Error crítico al mapear el JSON de Notion: " + e.getMessage());
         }
         return libros;
     }
