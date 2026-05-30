@@ -34,7 +34,10 @@ public class ReadingTrackerService {
         headers.set("Notion-Version", notionVersion);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String body = "{ \"filter\": { \"property\": \"Status\", \"status\": { \"equals\": \"Reading\" } } }";
+        String body = "{ \"filter\": { \"or\": [ " +
+                      "{ \"property\": \"Status\", \"status\": { \"equals\": \"Reading\" } }, " +
+                      "{ \"property\": \"Status\", \"status\": { \"equals\": \"Finished\" } } " +
+                      "] } }";
         
         //String body = "{}"; // Traémos todo el JSON sin filtros para realizar pruebas
 
