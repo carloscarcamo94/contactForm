@@ -17,7 +17,7 @@ public class ReadingTrackerService {
     @Value("${notion.api.token}")
     private String notionToken;
 
-    @Value("${notion.database.id}")
+    @Value("${notion.book.database.id}")
     private String databaseId;
 
     @Value("${notion.api.version}")
