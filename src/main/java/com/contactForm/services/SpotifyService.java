@@ -29,7 +29,7 @@ public class SpotifyService {
 
     // Obtemos un Access Token temporal usando el Refresh Token permanente
     private String obtenerAccessToken() {
-        String url = "https://accounts.spotify.com/api/token";
+    	String url = "https://accounts.spotify.com/api/token";
         
         HttpHeaders headers = new HttpHeaders();
         String auth = clientId + ":" + clientSecret;
@@ -57,7 +57,7 @@ public class SpotifyService {
         String accessToken = obtenerAccessToken();
         if (accessToken == null) return null;
 
-        // Intentar obtener la canción que suena AHORA
+        // Intentar obtener la canción que está sonando
         String urlCurrentlyPlaying = "https://api.spotify.com/v1/me/player/currently-playing";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -85,7 +85,7 @@ public class SpotifyService {
 
     // Fallback: Traemos la última canción reproducida si el reproductor está apagado
     private CancionDTO obtenerUltimaEscuchada(String accessToken) {
-        String urlRecentlyPlayed = "https://api.spotify.com/v1/me/player/recently-played?limit=1";
+    	String urlRecentlyPlayed = "https://api.spotify.com/v1/me/player/recently-played";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
