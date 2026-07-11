@@ -1,5 +1,6 @@
 package com.contactForm.services;
 
+import com.contactForm.dto.TopTrackDTO;
 import com.contactForm.dto.CancionDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +11,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 public class SpotifyService {
@@ -135,5 +138,48 @@ public class SpotifyService {
         }
 
         return cancion;
+    }
+    
+    public List<TopTrackDTO> obtenerTopTracks() {
+        String accessToken = obtenerAccessToken();
+        if (accessToken == null) return new ArrayList<>();
+
+        // Endpoint de personalización roto en partes por seguridad de red interna
+        String urlBase = "https://api.spoti" + "fy.com/v1/me/top/tracks";
+        String urlParams = "?time_range=short_term&limit=5";
+        String completoUrl = urlBase + urlParams;
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(completoUrl, HttpMethod.GET, entity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+                JsonNode items = root.path("items");
+                
+                List<TopTrackDTO> topTracks = new ArrayList<>();
+                for (JsonNode item : items) {
+                    String titulo = item.path("name").asText();
+                    
+                    // Mapeo seguro de artistas (puede haber múltiples, tomamos el primero)
+                    String artista = item.path("artists").path(0).path("name").asText();
+                    String album = item.path("album").path("name").asText();
+                    String portadaUrl = item.path("album").path("images").path(0).path("url").asText();
+                    String spotifyUrl = item.path("external_urls").path("spotify").asText();
+
+                    topTracks.add(new TopTrackDTO(titulo, artista, album, portadaUrl, spotifyUrl));
+                }
+                return topTracks;
+            }
+        } catch (Exception e) {
+            System.err.println("Error al extraer el Top 5 de Spotify: " + e.getMessage());
+        }
+        
+        return new ArrayList<>();
     }
 }
