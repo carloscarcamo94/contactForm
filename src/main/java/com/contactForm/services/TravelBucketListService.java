@@ -23,8 +23,15 @@ public class TravelBucketListService {
     @Value("${notion.api.version}")
     private String notionVersion;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Declaramos las dependencias
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    // Inyectamos las dependencias a través del constructor
+    public TravelBucketListService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     public List<DestinoDTO> obtenerDestinos() {
         String url = "https://api.notion.com/v1/databases/" + databaseId + "/query";

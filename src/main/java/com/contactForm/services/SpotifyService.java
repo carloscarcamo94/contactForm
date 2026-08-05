@@ -27,12 +27,19 @@ public class SpotifyService {
     @Value("${spotify.refresh.token}")
     private String refreshToken;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Declaramos las dependencias
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    // Obtemos un Access Token temporal usando el Refresh Token permanente
+    // Inyectamos dependencias a través del constructor
+    public SpotifyService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
+
+    // Obtenemos un Access Token temporal usando el Refresh Token permanente
     private String obtenerAccessToken() {
-    	String url = "https://accounts.spotify.com/api/token";
+        String url = "https://accounts.spotify.com/api/token";
         
         HttpHeaders headers = new HttpHeaders();
         String auth = clientId + ":" + clientSecret;
@@ -51,7 +58,7 @@ public class SpotifyService {
             JsonNode root = objectMapper.readTree(response.getBody());
             return root.path("access_token").asText();
         } catch (Exception e) {
-            System.err.println("Error al renovar token de Spotify: " + e.getMessage());
+            System.err.println("No se pudo renovar el token de Spotify: " + e.getMessage());
             return null;
         }
     }
@@ -60,7 +67,6 @@ public class SpotifyService {
         String accessToken = obtenerAccessToken();
         if (accessToken == null) return null;
 
-        // Intentar obtener la canción que está sonando
         String urlCurrentlyPlaying = "https://api.spotify.com/v1/me/player/currently-playing";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -69,26 +75,24 @@ public class SpotifyService {
         try {
             ResponseEntity<String> response = restTemplate.exchange(urlCurrentlyPlaying, HttpMethod.GET, entity, String.class);
 
-            // HTTP 204 o cuerpo vacío significa que el usuario no está escuchando música
             if (response.getStatusCode() == HttpStatus.NO_CONTENT || response.getBody() == null) {
                 return obtenerUltimaEscuchada(accessToken);
             }
 
             JsonNode root = objectMapper.readTree(response.getBody());
-            // Si está en modo comerciales o podcast de audio vacío, pasamos a las recientes
             if (root.path("item").isNull()) return obtenerUltimaEscuchada(accessToken);
 
             return mapearCancion(root.path("item"), true);
 
         } catch (Exception e) {
-            System.err.println("Error obteniendo reproducción actual, recurriendo a historial: " + e.getMessage());
+            System.err.println("No hay reproducción actual, recuperando el historial: " + e.getMessage());
             return obtenerUltimaEscuchada(accessToken);
         }
     }
 
     // Fallback: Traemos la última canción reproducida si el reproductor está apagado
     private CancionDTO obtenerUltimaEscuchada(String accessToken) {
-    	String urlRecentlyPlayed = "https://api.spotify.com/v1/me/player/recently-played";
+        String urlRecentlyPlayed = "https://api.spotify.com/v1/me/player/recently-played";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -103,7 +107,7 @@ public class SpotifyService {
                 return mapearCancion(trackNode, false);
             }
         } catch (Exception e) {
-            System.err.println("Error obteniendo historial de Spotify: " + e.getMessage());
+            System.err.println("No se pudo obtener el historial de Spotify: " + e.getMessage());
         }
         return null;
     }
@@ -114,7 +118,6 @@ public class SpotifyService {
         cancion.setSpotifyUrl(itemNode.path("external_urls").path("spotify").asText("#"));
         cancion.setEscuchandoAhora(enVivo);
 
-        // Artistas
         JsonNode artistas = itemNode.path("artists");
         if (artistas.isArray() && !artistas.isEmpty()) {
             StringBuilder nombres = new StringBuilder();
@@ -127,13 +130,11 @@ public class SpotifyService {
             cancion.setAutor("Artista Desconocido");
         }
 
-        // Álbum e imágenes de portada
         JsonNode albumNode = itemNode.path("album");
         cancion.setAlbum(albumNode.path("name").asText("Álbum Desconocido"));
         
         JsonNode imagenes = albumNode.path("images");
         if (imagenes.isArray() && !imagenes.isEmpty()) {
-            // Usamos Index 1 que es la resolución mediana (300x300), ideal para web
             cancion.setPortadaUrl(imagenes.get(1).path("url").asText());
         }
 
@@ -144,29 +145,22 @@ public class SpotifyService {
         String accessToken = obtenerAccessToken();
         if (accessToken == null) return new ArrayList<>();
 
-        // Endpoint de personalización roto en partes por seguridad de red interna
-        String urlBase = "https://api.spoti" + "fy.com/v1/me/top/tracks";
-        String urlParams = "?time_range=short_term&limit=5";
-        String completoUrl = urlBase + urlParams;
+        String url = "https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=5";
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + accessToken);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(completoUrl, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(response.getBody());
+                JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode items = root.path("items");
                 
                 List<TopTrackDTO> topTracks = new ArrayList<>();
                 for (JsonNode item : items) {
                     String titulo = item.path("name").asText();
-                    
-                    // Mapeo seguro de artistas (puede haber múltiples, tomamos el primero)
                     String artista = item.path("artists").path(0).path("name").asText();
                     String album = item.path("album").path("name").asText();
                     String portadaUrl = item.path("album").path("images").path(0).path("url").asText();
@@ -177,7 +171,7 @@ public class SpotifyService {
                 return topTracks;
             }
         } catch (Exception e) {
-            System.err.println("Error al extraer el Top 5 de Spotify: " + e.getMessage());
+            System.err.println("No se pudo extraer el Top 5 de Spotify: " + e.getMessage());
         }
         
         return new ArrayList<>();

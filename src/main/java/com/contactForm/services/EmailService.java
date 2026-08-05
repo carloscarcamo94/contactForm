@@ -14,17 +14,23 @@ public class EmailService {
     @Value("${resend.api.key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    // Declaramos la dependencia
+    private final RestTemplate restTemplate;
+
+    // Inyectamos la dependencia a través del constructor
+    public EmailService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public void enviarNotificacion(ContactForm contacto) {
         String url = "https://api.resend.com/emails";
 
-        // Configurar Headers
+        // Configuramos los Headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
-        // Configurar el cuerpo del mensaje (JSON)
+        // Configuramos el cuerpo del mensaje (JSON)
         Map<String, Object> body = new HashMap<>();
         body.put("from", "notificaciones@carloscarcamo.tech");
         body.put("to", "contacto@carloscarcamo.tech");

@@ -23,8 +23,15 @@ public class ReadingTrackerService {
     @Value("${notion.api.version}")
     private String notionVersion;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Declaramos las dependencias sin instanciarlas
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    // Inyectamos las dependencias a través del constructor
+    public ReadingTrackerService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     public List<LibroDTO> obtenerLibrosEnLectura() {
         String url = "https://api.notion.com/v1/databases/" + databaseId + "/query";
@@ -39,7 +46,7 @@ public class ReadingTrackerService {
                       "{ \"property\": \"Status\", \"status\": { \"equals\": \"Finished\" } } " +
                       "] } }";
         
-        //String body = "{}"; // Traémos todo el JSON sin filtros para realizar pruebas
+        //String body = "{}"; // Está línea trae todo el JSON sin filtros para realizar pruebas
 
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
