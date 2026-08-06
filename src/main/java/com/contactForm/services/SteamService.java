@@ -47,9 +47,11 @@ public class SteamService {
             
             // Lógica de estado y juego actual
             String currentGame = player.has("gameextrainfo") ? player.path("gameextrainfo").asText() : null;
+            String playingGameId = player.has("gameid") ? player.path("gameid").asText() : null;
+            
             String status = determineStatus(personastate, currentGame);
 
-            return new SteamStatusDTO(username, avatarUrl, status, currentGame);
+            return new SteamStatusDTO(username, avatarUrl, status, currentGame, currentGame, playingGameId);
         } catch (Exception e) {
             return null; 
         }
@@ -87,7 +89,7 @@ public class SteamService {
 
             // Ordenamos por los minutos jugados
             allGames.sort((a, b) -> Integer.compare(b.getPlayTimeMinutes(), a.getPlayTimeMinutes()));
-            return allGames.subList(0, Math.min(6, allGames.size()));
+            return allGames.subList(0, Math.min(4, allGames.size()));
 
         } catch (Exception e) {
             return new ArrayList<>();
@@ -96,7 +98,7 @@ public class SteamService {
 
     // Obtenemos los logros obtenidos
     public List<SteamAchievementDTO> getSpecialGamesAchievements() {
-        List<String> specialAppIds = List.of("367520", "1030300", "774361", "588650", "683320", "250900", "304430", "48000"); 
+        List<String> specialAppIds = List.of("367520", "1030300", "774361", "2114740", "387290", "1057090", "588650", "2751000"); 
         List<SteamAchievementDTO> achievementsList = new ArrayList<>();
 
         for (String appId : specialAppIds) {
