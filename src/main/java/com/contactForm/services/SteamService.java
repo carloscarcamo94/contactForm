@@ -80,14 +80,13 @@ public class SteamService {
                 int playtimeMinutes = game.path("playtime_forever").asInt();
                 
                 // Construir URL del banner oficial de Steam
-                String bannerUrl = String.format("https://cdn.akamai.steamstatic.com/steam/apps/%s/header.jpg", appId);
-                
+                String bannerUrl = String.format("https://cdn.cloudflare.steamstatic.com/steam/apps/%s/capsule_616x353.jpg", appId);
                 allGames.add(new SteamGameDTO(appId, name, bannerUrl, playtimeMinutes / 60));
             }
 
             // Ordenamos por horas jugadas
             allGames.sort((a, b) -> Integer.compare(b.getPlayTimeHours(), a.getPlayTimeHours()));
-            return allGames.subList(0, Math.min(5, allGames.size()));
+            return allGames.subList(0, Math.min(6, allGames.size()));
 
         } catch (Exception e) {
             return new ArrayList<>();
@@ -96,7 +95,7 @@ public class SteamService {
 
     // Obtenemos los logros obtenidos
     public List<SteamAchievementDTO> getSpecialGamesAchievements() {
-        List<String> specialAppIds = List.of("367520", "1030300", "774361"); 
+        List<String> specialAppIds = List.of("367520", "1030300", "774361", "588650", "683320", "250900", "304430", "48000"); 
         List<SteamAchievementDTO> achievementsList = new ArrayList<>();
 
         for (String appId : specialAppIds) {
@@ -109,7 +108,7 @@ public class SteamService {
                 if (!stats.path("success").asBoolean()) continue;
 
                 String gameName = stats.path("gameName").asText();
-                String bannerUrl = String.format("https://cdn.akamai.steamstatic.com/steam/apps/%s/header.jpg", appId);
+                String bannerUrl = String.format("https://cdn.cloudflare.steamstatic.com/steam/apps/%s/capsule_616x353.jpg", appId);
                 
                 JsonNode achievementsNode = stats.path("achievements");
                 int total = achievementsNode.size();
