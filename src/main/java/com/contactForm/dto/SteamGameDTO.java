@@ -5,15 +5,17 @@ public class SteamGameDTO {
     private String name;
     private String bannerUrl;
     private Integer playTimeHours;
+    private Integer playTimeMinutes;
 
     public SteamGameDTO() {
     }
 
-    public SteamGameDTO(String appId, String name, String bannerUrl, Integer playTimeHours) {
+    public SteamGameDTO(String appId, String name, String bannerUrl, Integer playTimeHours, Integer playTimeMinutes) {
         this.appId = appId;
         this.name = name;
         this.bannerUrl = bannerUrl;
         this.playTimeHours = playTimeHours;
+        this.playTimeMinutes = playTimeMinutes;
     }
 
     // Getters y Setters
@@ -48,4 +50,12 @@ public class SteamGameDTO {
     public void setPlayTimeHours(Integer playTimeHours) {
         this.playTimeHours = playTimeHours;
     }
+
+	public Integer getPlayTimeMinutes() {
+		return playTimeMinutes;
+	}
+
+	public void setPlayTimeMinutes(Integer playTimeMinutes) {
+		this.playTimeMinutes = playTimeMinutes;
+	}
 }

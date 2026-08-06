@@ -79,13 +79,14 @@ public class SteamService {
                 String name = game.path("name").asText();
                 int playtimeMinutes = game.path("playtime_forever").asInt();
                 
-                // Construir URL del banner oficial de Steam
                 String bannerUrl = String.format("https://cdn.cloudflare.steamstatic.com/steam/apps/%s/capsule_616x353.jpg", appId);
-                allGames.add(new SteamGameDTO(appId, name, bannerUrl, playtimeMinutes / 60));
+                
+                // Pasamos las horas calculadas como los minutos reales para ordenar
+                allGames.add(new SteamGameDTO(appId, name, bannerUrl, playtimeMinutes / 60, playtimeMinutes));
             }
 
-            // Ordenamos por horas jugadas
-            allGames.sort((a, b) -> Integer.compare(b.getPlayTimeHours(), a.getPlayTimeHours()));
+            // Ordenamos por los minutos jugados
+            allGames.sort((a, b) -> Integer.compare(b.getPlayTimeMinutes(), a.getPlayTimeMinutes()));
             return allGames.subList(0, Math.min(6, allGames.size()));
 
         } catch (Exception e) {
